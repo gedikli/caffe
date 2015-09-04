@@ -53,6 +53,8 @@ SET(CMAKE_BUILD_WITH_INSTALL_RPATH FALSE)
 SET(CMAKE_INSTALL_RPATH_USE_LINK_PATH FALSE)
 set(CMAKE_EXE_LINKER_FLAGS "-s")
 
+include(ExternalProject)
+
 include(cmake/Utils.cmake)
 include(cmake/Targets.cmake)
 include(cmake/Misc.cmake)
@@ -60,14 +62,14 @@ include(cmake/Summary.cmake)
 include(cmake/ConfigGen.cmake)
 
 # ---[ Options
-caffe_option(CPU_ONLY  "Build Caffe wihtout CUDA support" OFF) # TODO: rename to USE_CUDA
+caffe_option(CPU_ONLY  "Build Caffe without CUDA support" OFF) # TODO: rename to USE_CUDA
 caffe_option(USE_CUDNN "Build Caffe with cuDNN libary support" ON IF NOT CPU_ONLY)
 caffe_option(BUILD_SHARED_LIBS "Build shared libraries" ON)
 caffe_option(BUILD_python "Build Python wrapper" ON)
 set(python_version "2" CACHE STRING "Specify which python version to use")
 caffe_option(BUILD_matlab "Build Matlab wrapper" OFF IF UNIX OR APPLE)
 caffe_option(BUILD_docs   "Build documentation" ON IF UNIX OR APPLE)
-caffe_option(BUILD_python_layer "Build the caffe python layer" ON)
+caffe_option(BUILD_python_layer "Build the Caffe python layer" ON)
 
 # ---[ Dependencies
 include(cmake/Dependencies.cmake)
@@ -106,6 +108,10 @@ add_subdirectory(docs)
 
 # ---[ Linter target
 add_custom_target(lint COMMAND ${CMAKE_COMMAND} -P ${PROJECT_SOURCE_DIR}/cmake/lint.cmake)
+
+# ---[ pytest target
+add_custom_target(pytest COMMAND python${python_version} -m unittest discover -s caffe/test WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/python )
+add_dependencies(pytest pycaffe)
 
 # ---[ Configuration summary
 caffe_print_configuration_summary()
